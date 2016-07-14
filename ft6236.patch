@@ -1,0 +1,48 @@
+From d6d82948a7a06668a72e1e130ae0ac27f8a6ee7a Mon Sep 17 00:00:00 2001
+From: Rost <rost@turboturbo.net>
+Date: Sun, 10 Jul 2016 03:39:39 +0000
+Subject: [PATCH] Added fixed pressure reporting for TSLIB compatability
+ 
+---
+ drivers/input/touchscreen/ft6236.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+ 
+diff --git a/drivers/input/touchscreen/ft6236.c b/drivers/input/touchscreen/ft6236.c
+index d240d2e..1cf6430 100644
+--- a/drivers/input/touchscreen/ft6236.c
++++ b/drivers/input/touchscreen/ft6236.c
+@@ -23,6 +23,7 @@
+ #include <linux/property.h>
+ 
+ #define FT6236_MAX_TOUCH_POINTS                2
++#define FT6236_MAX_PRESSURE            0xFF
+ 
+ #define FT6236_REG_TH_GROUP            0x80
+ #define FT6236_REG_PERIODACTIVE                0x88
+@@ -38,6 +39,8 @@
+ #define FT6236_EVENT_CONTACT           2
+ #define FT6236_EVENT_NO_EVENT          3
+ 
++#define FT6236_PRESSURE                        0x7F
++
+ struct ft6236_data {
+        struct i2c_client *client;
+        struct input_dev *input;
+@@ -140,6 +143,7 @@ static irqreturn_t ft6236_interrupt(int irq, void *dev_id)
+                        input_report_abs(input, ABS_MT_POSITION_X, x);
+                        input_report_abs(input, ABS_MT_POSITION_Y, y);
+                }
++               input_report_abs(input, ABS_MT_PRESSURE, FT6236_PRESSURE);
+        }
+ 
+        input_mt_sync_frame(input);
+@@ -273,6 +277,7 @@ static int ft6236_probe(struct i2c_client *client,
+                input_set_abs_params(input, ABS_MT_POSITION_Y, 0,
+                                     ft6236->max_y, fuzz_y, 0);
+        }
++       input_set_abs_params(input, ABS_MT_PRESSURE,0, FT6236_MAX_PRESSURE,0,0);
+ 
+        error = input_mt_init_slots(input, FT6236_MAX_TOUCH_POINTS,
+                                    INPUT_MT_DIRECT | INPUT_MT_DROP_UNUSED);
+--
+2.1.4
